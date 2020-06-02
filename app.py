@@ -1,12 +1,11 @@
-#/usr/bin/python3
-#-- encoding:utf-8 --
-
+# /usr/bin/python3
+# -- encoding:utf-8 --
 
 from flask import Flask, jsonify, make_response, abort, request
 import sqlite3
 
-
 app = Flask(__name__)
+
 
 @app.route("/api/v1/info")
 def home_index():
@@ -98,8 +97,32 @@ def add_user(new_user):
     else:
         cursor.execute("insert into users (username, email, password, full_name) values(?,?,?,?)", (new_user['username'],new_user['email'], new_user['password'], new_user['name']))
         conn.commit()
-        return "Success"
+        return "Add Success"
     conn.close()
+
+
+@app.route('/api/v1/users', methods=['DELETE'])
+def delete_user():
+    if not request.json or not "username" in request.json:
+        abort(400)
+    else:
+        user = request.json['username']
+        return jsonify({'status': del_user(user)}), 200
+
+
+def del_user(del_user):
+    conn = sqlite3.connect("mydb.db")
+    print("Opened database successfully")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * from users where username=? ", (del_user,))
+    data = cursor.fetchall()
+    print("Data", data)
+    if len(data) == 0:
+        abort(404)
+    else:
+        cursor.execute("delete from users where username==? ", (del_user,))
+        conn.commit()
+        return "Delete Success"
 
 
 @app.errorhandler(400)
