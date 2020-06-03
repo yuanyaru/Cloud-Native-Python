@@ -33,5 +33,5 @@ curl http://localhost:5000/api/v2/tweets/1
 pip3 install -r requirements.txt -i http://pypi.douban.com/simple/ --trusted-host pypi.douban.com
 
 ## 测试
-curl
-单元测试框架---nose
+* curl
+* 单元测试框架 --- nose
