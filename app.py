@@ -20,7 +20,6 @@ def home_index():
         api['methods'] = row[2]
         api['links'] = row[3]
         api_list.append(api)
-    
     conn.close()
     return jsonify({'api_version': api_list}), 200
 
@@ -43,7 +42,6 @@ def list_users():
         a_dict['password'] = row[3] 
         a_dict['id'] = row[4] 
         api_list.append(a_dict)
-    
     conn.close()
     return jsonify({'user_list': api_list})
 
@@ -67,13 +65,13 @@ def list_user(user_id):
         user['email'] = data[0][1]
         user['password'] = data[0][2]
         user['id'] = data[0][4]
-   
     conn.close()
     return jsonify(user)
 
 
 @app.route('/api/v1/users', methods=['POST'])
 def create_user():
+    # username、email、password不为空
     if not request.json or not 'username' in request.json or not 'email' in request.json or not 'password' in request.json:
         abort(400)
     user = {
@@ -88,14 +86,14 @@ def create_user():
 def add_user(new_user):
     conn = sqlite3.connect("mydb.db")
     print("Opened database successfully")
-    api_list = []
     cursor = conn.cursor()
     cursor.execute("SELECT * from users where username=? or email=?", (new_user['username'], new_user['email']))
     data = cursor.fetchall()
     if len(data) != 0:
         abort(409)
     else:
-        cursor.execute("insert into users (username, email, password, full_name) values(?,?,?,?)", (new_user['username'],new_user['email'], new_user['password'], new_user['name']))
+        cursor.execute("insert into users (username, email, password, full_name) values(?,?,?,?)",
+                       (new_user['username'], new_user['email'], new_user['password'], new_user['name']))
         conn.commit()
         return "Add Success"
     conn.close()
@@ -110,17 +108,17 @@ def delete_user():
         return jsonify({'status': del_user(user)}), 200
 
 
-def del_user(del_user):
+def del_user(user):
     conn = sqlite3.connect("mydb.db")
     print("Opened database successfully")
     cursor = conn.cursor()
-    cursor.execute("SELECT * from users where username=? ", (del_user,))
+    cursor.execute("SELECT * from users where username=? ", (user,))
     data = cursor.fetchall()
     print("Data", data)
     if len(data) == 0:
         abort(404)
     else:
-        cursor.execute("delete from users where username==? ", (del_user,))
+        cursor.execute("delete from users where username==? ", (user,))
         conn.commit()
         return "Delete Success"
 
