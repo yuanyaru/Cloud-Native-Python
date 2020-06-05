@@ -2,10 +2,21 @@
 # -- encoding:utf-8 --
 
 from flask import Flask, jsonify, make_response, abort, request
+from flask import render_template
 from time import gmtime, strftime
 import sqlite3
 
 app = Flask(__name__)
+
+
+@app.route('/addtweets')
+def addtweetjs():
+    return render_template('addtweets.html')
+
+
+@app.route('/adduser')
+def adduser():
+    return render_template('adduser.html')
 
 
 @app.route("/api/v1/info")
