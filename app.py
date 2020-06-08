@@ -1,12 +1,48 @@
 #!/usr/bin/python3
 # -- encoding:utf-8 --
 
+import flask
 from flask import Flask, jsonify, make_response, abort, request
-from flask import render_template
+from flask_cors import CORS, cross_origin
+from flask import render_template, session, redirect, url_for
 from time import gmtime, strftime
 import sqlite3
 
 app = Flask(__name__)
+# 为所有应用资源启用CORS
+CORS(app)
+cookie = flask.request.cookies.get('my_cookie')
+
+
+@app.route('/')
+def main():
+    return render_template('main.html')
+
+
+@app.route('/set_cookie')
+def cookie_insertion():
+    redirect_to_main = redirect('/')
+    response = app.make_response(redirect_to_main)
+    response.set_cookie('cookie_name', value='values')
+    return response
+
+
+@app.route('/clear')
+def clearsession():
+    # Clear the session
+    session.clear()
+    # Redirect the user to the main page
+    return redirect(url_for('main'))
+
+
+@app.route('/addname')
+def addname():
+    if request.args.get('yourname'):
+        session['name'] = request.args.get('yourname')
+        # Add then redirect the user to the main page
+        return redirect(url_for('main'))
+    else:
+        render_template('addname.html', session=session)
 
 
 @app.route('/addtweets')
