@@ -17,7 +17,7 @@
                     Username: <input data-bind="value: username" placeholder="Username" type="username">
                 </div>
                 <div>
-                    body: <textarea data-bind="value: body" placeholder="Content of tweet" type="text"></textarea>
+                    Body: <textarea data-bind="value: body" placeholder="Content of tweet" type="text"></textarea>
                 </div>
                 <button type="submit">Add Tweet</button>
             </table>
@@ -27,7 +27,7 @@
         <li>
             <p data-bind="text: username"></p>
             <p data-bind="text: body"></p>
-{#            <p data-bind="text: timestamp"></p>#}
+            <p data-bind="text: timestamp"></p>
         </li>
     </ul>
     <script type="text/javascript" src="{{ url_for('static', filename='js/common/jquery-3.3.1.min.js')}}"></script>

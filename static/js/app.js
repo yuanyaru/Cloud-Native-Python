@@ -16,6 +16,7 @@ function UserListViewModel() {
 
     self.addUser = function () {
         self.save();
+        location.reload();
         self.name("");
         self.username("");
         self.password("");
@@ -45,7 +46,12 @@ function UserListViewModel() {
                 console.log("Pushing to users array");
                 // 双向数据绑定
                 self = new Array();
-                self.push(new User({name: data.name, username: data.username, password: data.password, email: data.email}));
+                self.push(new User({
+                    name: data.name,
+                    username: data.username,
+                    password: data.password,
+                    email: data.email
+                }));
                 return;
             },
             error: function () {
