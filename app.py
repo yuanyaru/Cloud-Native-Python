@@ -317,6 +317,7 @@ def get_tweets():
 
 
 def list_tweets():
+    """
     conn = sqlite3.connect("mydb.db")
     print("Opened database successfully")
     api_list = []
@@ -335,18 +336,12 @@ def list_tweets():
             api_list.append(tweets)
     conn.close()
     return jsonify({'tweets_list': api_list})
-
-
-@app.route('/api/v2/tweets', methods=['POST'])
-def add_tweets():
-    user_tweet = {}
-    if not request.json or not 'username' in request.json or not 'body' in request.json:
-        abort(400)
-    user_tweet['username'] = request.json['username']
-    user_tweet['body'] = request.json['body']
-    user_tweet['created_at'] = strftime("%Y-%m-%dT%H:%M:%SZ", gmtime())
-    print(user_tweet)
-    return jsonify({'status': add_tweet(user_tweet)}), 200
+    """
+    api_list = []
+    db = connection.cloud_native.tweets
+    for row in db.find():
+        api_list.append(str(row))
+    return jsonify({'tweets_list': api_list})
 
 
 @app.route('/api/v2/tweets/<int:id>', methods=['GET'])
@@ -355,6 +350,7 @@ def get_tweet(id):
 
 
 def list_tweet(user_id):
+    """
     print(user_id)
     conn = sqlite3.connect("mydb.db")
     print("Opened database successfully")
@@ -372,9 +368,31 @@ def list_tweet(user_id):
         tweet['tweet_time'] = data[0][3]
     conn.close()
     return jsonify(tweet)
+    """
+    db = connection.cloud_native.tweets
+    api_list = []
+    tweet = db.find({'id': user_id})
+    for i in tweet:
+        api_list.append(str(i))
+    if api_list == []:
+        abort(404)
+    return jsonify({"tweet": api_list})
+
+
+@app.route('/api/v2/tweets', methods=['POST'])
+def add_tweets():
+    user_tweet = {}
+    if not request.json or not 'username' in request.json or not 'body' in request.json:
+        abort(400)
+    user_tweet['username'] = request.json['username']
+    user_tweet['body'] = request.json['body']
+    user_tweet['created_at'] = strftime("%Y-%m-%dT%H:%M:%SZ", gmtime())
+    print(user_tweet)
+    return jsonify({'status': add_tweet(user_tweet)}), 200
 
 
 def add_tweet(new_tweet):
+    """
     conn = sqlite3.connect("mydb.db")
     print("Opened database successfully")
     cursor = conn.cursor()
@@ -386,6 +404,19 @@ def add_tweet(new_tweet):
         cursor.execute("INSERT into tweets (username, body, tweet_time) values(?,?,?)",
                        (new_tweet['username'], new_tweet['body'], new_tweet['created_at']))
         conn.commit()
+        return "Add Success"
+    """
+    api_list = []
+    print(new_tweet)
+    db_user = connection.cloud_native.users
+    db_tweet = connection.cloud_native.tweets
+    user = db_user.find({"username": new_tweet['username']})
+    for i in user:
+        api_list.append(str(i))
+    if api_list == []:
+        abort(404)
+    else:
+        db_tweet.insert_one(new_tweet)
         return "Add Success"
 
 
