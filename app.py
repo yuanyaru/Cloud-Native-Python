@@ -16,6 +16,11 @@ CORS(app)
 connection = MongoClient("mongodb://localhost:27017/")
 
 
+@app.route('/index')
+def index():
+    return render_template('index.html', session=session['username'])
+
+
 def create_mongodatabase():
     try:
         dbnames = connection.database_names()
@@ -225,7 +230,7 @@ def add_user(new_user):
         print(str(i))
         api_list.append(str(i))
     if api_list == []:
-        db.insert(new_user)
+        db.insert_one(new_user)
         return "Add Success"
     else:
         abort(409)
