@@ -1,11 +1,12 @@
 #!/usr/bin/python3
 # -- encoding:utf-8 --
 
-from flask import Flask, jsonify, make_response, abort, request
+from flask import Flask, flash, jsonify, make_response, abort, request
 from flask_cors import CORS
 from flask import render_template, session, redirect, url_for
 from time import gmtime, strftime
 import sqlite3
+import bcrypt
 import json
 from pymongo import MongoClient
 import random
@@ -15,11 +16,6 @@ app = Flask(__name__)
 CORS(app)
 # cookie = flask.request.cookies.get('my_cookie')
 connection = MongoClient("mongodb://localhost:27017/")
-
-
-@app.route('/index')
-def index():
-    return render_template('index.html')
 
 
 def create_mongodatabase():
@@ -66,8 +62,71 @@ def create_mongodatabase():
 
 
 @app.route('/')
+def home():
+    if not session.get('logged_in'):
+        return render_template('login.html')
+    else:
+        return render_template('index.html', session=session['username'])
+
+
+@app.route('/index')
+def index():
+    return render_template('index.html', session=session['username'])
+
+
+@app.route('/login', methods=['POST'])
+def do_admin_login():
+    users = connection.cloud_native.users
+    api_list = []
+    login_user = users.find({'username': request.form['username']})
+    for i in login_user:
+        api_list.append(i)
+    print(api_list)
+    if api_list != []:
+        if api_list[0]['password'].decode('utf-8') == bcrypt.hashpw(request.form['password'].encode('utf-8'), api_list[0]['password']).decode('utf-8'):
+            session['logged_in'] = api_list[0]['username']
+            return redirect(url_for('index'))
+        return 'Invalid username/password!'
+    else:
+        flash("Invalid Authentication")
+
+    return 'Invalid User!'
+
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        users = connection.cloud_native.users
+        api_list = []
+        existing_user = users.find({'$or': [{"username": request.form['username']},
+                                            {"email": request.form['email']}]})
+        for i in existing_user:
+            # print (str(i))
+            api_list.append(str(i))
+
+        # print (api_list)
+        if api_list == []:
+            users.insert({
+                "email": request.form['email'],
+                "id": random.randint(1, 1000),
+                "name": request.form['name'],
+                "password": bcrypt.hashpw(request.form['pass'].encode('utf-8'), bcrypt.gensalt()),
+                "username": request.form['username']
+            })
+            session['username'] = request.form['username']
+            return redirect(url_for('home'))
+
+        return 'That user already exists'
+    else:
+        return render_template('signup.html')
+
+
+
+"""
+@app.route('/')
 def main():
     return render_template('main.html')
+"""
 
 
 @app.route('/set_cookie')
