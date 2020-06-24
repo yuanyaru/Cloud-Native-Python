@@ -6,6 +6,7 @@ from flask_cors import CORS
 from flask import render_template, session, redirect, url_for
 from time import gmtime, strftime
 import sqlite3
+import json
 from pymongo import MongoClient
 import random
 
@@ -18,7 +19,7 @@ connection = MongoClient("mongodb://localhost:27017/")
 
 @app.route('/index')
 def index():
-    return render_template('index.html', session=session['username'])
+    return render_template('index.html')
 
 
 def create_mongodatabase():
@@ -345,8 +346,15 @@ def list_tweets():
     api_list = []
     db = connection.cloud_native.tweets
     for row in db.find():
-        api_list.append(str(row))
-    return jsonify({'tweets_list': api_list})
+        print(row)
+        dict = {}
+        # dict['id'] = row['id']
+        dict['timestamp'] = row['timestamp']
+        dict['username'] = row['username']
+        dict['body'] = row['body']
+        api_list.append(dict)
+    print(api_list)
+    return json.dumps(api_list)
 
 
 @app.route('/api/v2/tweets/<int:id>', methods=['GET'])
@@ -391,12 +399,13 @@ def add_tweets():
         abort(400)
     user_tweet['username'] = request.json['username']
     user_tweet['body'] = request.json['body']
-    user_tweet['created_at'] = strftime("%Y-%m-%dT%H:%M:%SZ", gmtime())
+    user_tweet['timestamp'] = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+    user_tweet['id'] = random.randint(1, 1000)
     print(user_tweet)
     return jsonify({'status': add_tweet(user_tweet)}), 200
 
 
-def add_tweet(new_tweet):
+def add_tweet(user_tweet):
     """
     conn = sqlite3.connect("mydb.db")
     print("Opened database successfully")
@@ -412,16 +421,16 @@ def add_tweet(new_tweet):
         return "Add Success"
     """
     api_list = []
-    print(new_tweet)
+    print(user_tweet)
     db_user = connection.cloud_native.users
     db_tweet = connection.cloud_native.tweets
-    user = db_user.find({"username": new_tweet['username']})
+    user = db_user.find({"username": user_tweet['username']})
     for i in user:
         api_list.append(str(i))
     if api_list == []:
         abort(404)
     else:
-        db_tweet.insert_one(new_tweet)
+        db_tweet.insert_one(user_tweet)
         return "Add Success"
 
 

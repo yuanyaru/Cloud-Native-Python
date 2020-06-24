@@ -36,3 +36,12 @@ pip3 install -r requirements.txt -i http://pypi.douban.com/simple/ --trusted-hos
 * curl
 * 单元测试框架 --- nose
 * POSTMAN工具
+
+## centos 操作mongodb
+1. systemctl status mongod.service 查看mogodb服务的状态
+2. mongo 进入
+3. show dbs 显示数据库
+4. use databaseName 选库
+5. show tables 查表
+6. db.tweets.drop() 删除当前库里的tweets表
+7. db.dropDatabase() 删除数据库
