@@ -12,6 +12,8 @@ from pymongo import MongoClient
 import random
 
 app = Flask(__name__)
+app.config.from_object(__name__)
+app.secret_key = '<some secret key>'
 # 为所有应用资源启用CORS
 CORS(app)
 # cookie = flask.request.cookies.get('my_cookie')
@@ -63,7 +65,7 @@ def create_mongodatabase():
 
 @app.route('/')
 def home():
-    if not session.get('logged_in'):
+    if not session.get('username'):
         return render_template('login.html')
     else:
         return render_template('index.html', session=session['username'])
@@ -74,17 +76,16 @@ def index():
     return render_template('index.html', session=session['username'])
 
 
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def do_admin_login():
     users = connection.cloud_native.users
     api_list = []
     login_user = users.find({'username': request.form['username']})
     for i in login_user:
         api_list.append(i)
-    print(api_list)
     if api_list != []:
-        if api_list[0]['password'].decode('utf-8') == bcrypt.hashpw(request.form['password'].encode('utf-8'), api_list[0]['password']).decode('utf-8'):
-            session['logged_in'] = api_list[0]['username']
+        if api_list[0]['password'] == request.form['password']:
+            session['username'] = api_list[0]['username']
             return redirect(url_for('index'))
         return 'Invalid username/password!'
     else:
@@ -101,10 +102,8 @@ def signup():
         existing_user = users.find({'$or': [{"username": request.form['username']},
                                             {"email": request.form['email']}]})
         for i in existing_user:
-            # print (str(i))
             api_list.append(str(i))
 
-        # print (api_list)
         if api_list == []:
             users.insert({
                 "email": request.form['email'],
@@ -115,11 +114,42 @@ def signup():
             })
             session['username'] = request.form['username']
             return redirect(url_for('home'))
-
         return 'That user already exists'
     else:
         return render_template('signup.html')
 
+
+@app.route('/profile', methods=['GET', 'POST'])
+def profile():
+    if request.method == 'POST':
+        users = connection.cloud_native.users
+        api_list = []
+        existing_users = users.find({"username": session['username']})
+        for i in existing_users:
+            api_list.append(str(i))
+        user = {}
+        if api_list != []:
+            user['email'] = request.form['email']
+            user['name'] = request.form['name']
+            user['password'] = request.form['pass']
+            users.update({'username': session['username']}, {'$set': user})
+        else:
+            return 'User not found!'
+        return redirect(url_for('index'))
+    if request.method == 'GET':
+        users = connection.cloud_native.users
+        user = []
+        existing_user = users.find({"username": session['username']})
+        for i in existing_user:
+            user.append(i)
+        return render_template('profile.html', name=user[0]['name'], username=user[0]['username'],
+                               password=user[0]['password'], email=user[0]['email'])
+
+
+@app.route("/logout")
+def logout():
+    session['username'] = False
+    return redirect(url_for('home'))
 
 
 """
