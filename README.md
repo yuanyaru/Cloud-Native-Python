@@ -45,3 +45,11 @@ pip3 install -r requirements.txt -i http://pypi.douban.com/simple/ --trusted-hos
 5. show tables 查表
 6. db.tweets.drop() 删除当前库里的tweets表
 7. db.dropDatabase() 删除数据库
+8. 查看表记录 
+```
+show collections
+apirelease
+tweets
+users
+> db.tweets.find()
+```

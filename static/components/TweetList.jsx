@@ -1,4 +1,4 @@
-import Tweettemplate from '../components/templatetweet'
+import Tweettemplate from './templatetweet'
 
 export default class TweetList extends React.Component {
     render(){
