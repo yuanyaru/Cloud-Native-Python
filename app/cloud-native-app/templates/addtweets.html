@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Twitter Application</title>
+</head>
+<body>
+    <div class="navbar">
+            <div class="navbar-inner">
+                <a class="brand" href="#">Tweet App Demo</a>
+            </div>
+    </div>
+    <form data-bind="submit: addTweet">
+        <div id="main" class="container">
+            <table class="table table-striped">
+                <div>
+                    Username: <input data-bind="value: username" placeholder="Username" type="username">
+                </div>
+                <div>
+                    Body: <textarea data-bind="value: body" placeholder="Content of tweet" type="text"></textarea>
+                </div>
+                <button type="submit">Add Tweet</button>
+            </table>
+        </div>
+    </form>
+    <ul data-bind="foreach: tweets_list, visible: tweets_list().length > 0">
+        <li>
+            <p data-bind="text: username"></p>
+            <p data-bind="text: body"></p>
+            <p data-bind="text: timestamp"></p>
+        </li>
+    </ul>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/common/jquery-3.3.1.min.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/common/knockout-min.js')}}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/common/bootstrap-combined.min.css')}}">
+{#    <script type="text/javascript" src="{{ url_for('static', filename='js/common/bootstrap.min.js')}}"></script>#}
+    <script src="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/tweet.js')}}"></script>
+</body>
+</html>

@@ -1,6 +1,0 @@
-Flask==0.10.1
-Werkzeug==0.16.1
-nose
-flask-cors
-pymongo==3.4.0
-bcrypt
